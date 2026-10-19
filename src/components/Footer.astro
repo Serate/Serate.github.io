@@ -1,0 +1,17 @@
+---
+import { SITE } from '../data/site';
+
+const year = new Date().getFullYear();
+---
+
+<footer class="footer">
+  <div class="container footer__inner">
+    <span>© {year} {SITE.name} · {SITE.handle}</span>
+    <div class="footer__links">
+      <a href={SITE.github} target="_blank" rel="noopener noreferrer">GitHub</a>
+      <a href="/blog/">博客</a>
+      <a href="/rss.xml">RSS</a>
+      <a href="/sitemap-index.xml">站点地图</a>
+    </div>
+  </div>
+</footer>

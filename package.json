@@ -1,0 +1,25 @@
+{
+  "name": "serate-github-io",
+  "type": "module",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Serate 的个人主页与技术博客 — 空间智能 / 3D Web 渲染",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "og": "node scripts/generate-og.mjs",
+    "fonts": "node scripts/fetch-fonts.mjs",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "@astrojs/rss": "^4.0.19",
+    "@astrojs/sitemap": "^3.7.4",
+    "astro": "^7.4.1"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.11",
+    "sharp": "^0.34.4",
+    "typescript": "^6.0.3"
+  }
+}

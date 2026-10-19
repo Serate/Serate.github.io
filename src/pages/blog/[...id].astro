@@ -1,0 +1,119 @@
+---
+import { getCollection, render, type CollectionEntry } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Icon from '../../components/Icon.astro';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('blog', ({ data }) => !data.draft);
+  return posts.map((post) => ({
+    params: { id: post.id },
+    props: { post },
+  }));
+}
+
+interface Props {
+  post: CollectionEntry<'blog'>;
+}
+
+const { post } = Astro.props;
+const { Content, headings } = await render(post);
+
+const all = (await getCollection('blog', ({ data }) => !data.draft)).sort(
+  (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
+);
+
+const current = all.findIndex((p) => p.id === post.id);
+const newer = current > 0 ? all[current - 1] : undefined;
+const older = current < all.length - 1 ? all[current + 1] : undefined;
+
+// 阅读时长：中文按字、英文按词分别估算
+const body = post.body ?? '';
+const cjkChars = (body.match(/[一-龥]/g) ?? []).length;
+const latinWords = body.replace(/[一-龥]/g, ' ').split(/\s+/).filter(Boolean).length;
+const readingMinutes = Math.max(1, Math.round(cjkChars / 400 + latinWords / 220));
+
+const toc = headings.filter((h) => h.depth === 2 || h.depth === 3);
+
+const formatDate = (date: Date) =>
+  `${date.getFullYear()} 年 ${date.getMonth() + 1} 月 ${date.getDate()} 日`;
+---
+
+<BaseLayout
+  title={post.data.title}
+  description={post.data.description}
+  type="article"
+  publishedTime={post.data.pubDate}
+  tags={post.data.tags}
+>
+  <div class="container article">
+    <header class="article__head">
+      <a class="article__back" href="/blog/">
+        <Icon name="arrowLeft" />
+        全部文章
+      </a>
+
+      <h1 class="article__title">{post.data.title}</h1>
+      <p class="article__desc">{post.data.description}</p>
+
+      <div class="article__meta">
+        <span>
+          <Icon name="calendar" />
+          <time datetime={post.data.pubDate.toISOString()}>{formatDate(post.data.pubDate)}</time>
+        </span>
+        <span>
+          <Icon name="clock" />
+          约 {readingMinutes} 分钟
+        </span>
+        {
+          post.data.tags.map((tag) => (
+            <a class="chip chip--accent" href={`/tags/${encodeURIComponent(tag)}/`}>
+              #{tag}
+            </a>
+          ))
+        }
+      </div>
+    </header>
+
+    <div class="article__body">
+      <div class="prose">
+        <Content />
+      </div>
+
+      {
+        toc.length > 2 && (
+          <aside class="toc" aria-label="目录">
+            <p class="toc__title">目录</p>
+            <ul class="toc__list">
+              {toc.map((heading) => (
+                <li class={heading.depth === 3 ? 'toc__item toc__item--sub' : 'toc__item'}>
+                  <a href={`#${heading.slug}`}>{heading.text}</a>
+                </li>
+              ))}
+            </ul>
+          </aside>
+        )
+      }
+    </div>
+
+    {
+      (newer || older) && (
+        <nav class="article-nav" aria-label="上下篇文章">
+          {newer ? (
+            <a class="article-nav__item" href={`/blog/${newer.id}/`}>
+              <span class="article-nav__label">← 更新的一篇</span>
+              <span class="article-nav__title">{newer.data.title}</span>
+            </a>
+          ) : (
+            <span />
+          )}
+          {older && (
+            <a class="article-nav__item" href={`/blog/${older.id}/`}>
+              <span class="article-nav__label">更早的一篇 →</span>
+              <span class="article-nav__title">{older.data.title}</span>
+            </a>
+          )}
+        </nav>
+      )
+    }
+  </div>
+</BaseLayout>

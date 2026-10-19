@@ -1,0 +1,207 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Icon from '../components/Icon.astro';
+import PointCloud from '../components/PointCloud.astro';
+import ProjectCard from '../components/ProjectCard.astro';
+import PostList from '../components/PostList.astro';
+import SectionHead from '../components/SectionHead.astro';
+import { ABOUT, CAPABILITIES, PROJECTS, SITE } from '../data/site';
+
+const posts = (await getCollection('blog', ({ data }) => !data.draft)).sort(
+  (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
+);
+
+const latest = posts.slice(0, 3);
+
+// 站内内容由作者本人维护，允许行内 **加粗** 直接转成 <strong>
+const inline = (text: string) => text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+---
+
+<BaseLayout>
+  <!-- ===================== Hero ===================== -->
+  <section class="hero">
+    <div class="container hero__grid">
+      <div>
+        <p class="hero__status">
+          <span class="hero__dot" aria-hidden="true"></span>
+          {SITE.location} · 空间智能 &amp; 3D Web 渲染
+        </p>
+
+        <h1 class="hero__title">
+          让空间问题<em>可计算</em><br />
+          让三维场景<em>可交互</em>
+        </h1>
+
+        <p class="hero__role">空间智能体 Runtime × 3D Gaussian Splatting Web 渲染</p>
+
+        <p class="hero__desc">
+          一边把自然语言的空间问题转成可校验的任务计划，驱动真实 GIS 执行并留下完整证据链；
+          一边用分块流式 LOD 把超大 3DGS 场景搬进浏览器。两个方向，都开源在 GitHub。
+        </p>
+
+        <div class="hero__actions">
+          <a class="btn btn--primary" href="#projects">
+            查看项目
+            <Icon name="arrowRight" />
+          </a>
+          <a class="btn" href={SITE.github} target="_blank" rel="noopener noreferrer">
+            <Icon name="github" />
+            GitHub
+          </a>
+        </div>
+
+        <div class="hero__meta">
+          <span><strong>坐标</strong> {SITE.location}</span>
+          <span><strong>公开项目</strong> {PROJECTS.length} 个</span>
+          <span><strong>技术</strong> Python / TypeScript / C++ / WebGL</span>
+        </div>
+      </div>
+
+      <PointCloud />
+    </div>
+  </section>
+
+  <!-- ===================== 项目 ===================== -->
+  <section class="section" id="projects">
+    <div class="container">
+      <SectionHead
+        index="01"
+        label="项目"
+        title="正在做的两件事"
+        lead="一个把 GIS 工具接到 Agent Runtime 上，一个把超大三维场景搬进浏览器。两者都在 GitHub 上开源。"
+      />
+
+      <div class="projects">
+        {PROJECTS.map((project) => <ProjectCard project={project} />)}
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== 能力 ===================== -->
+  <section class="section" id="capabilities">
+    <div class="container">
+      <SectionHead
+        index="02"
+        label="能力"
+        title="工具箱与关注方向"
+        lead="技术栈是手段，真正在意的是能不能把复杂系统拆成可替换、可观测、可测试的模块。"
+      />
+
+      <div class="capabilities">
+        {
+          CAPABILITIES.map((capability) => (
+            <section class="capability">
+              <h3 class="capability__title">{capability.title}</h3>
+              <p class="capability__desc">{capability.description}</p>
+              <ul class="chips">
+                {capability.items.map((item) => (
+                  <li class="chip">{item}</li>
+                ))}
+              </ul>
+            </section>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== 关于 ===================== -->
+  <section class="section" id="about">
+    <div class="container">
+      <SectionHead index="03" label="关于" title="我怎么看这件事" />
+
+      <div class="about">
+        <div class="about__body">
+          {ABOUT.paragraphs.map((paragraph) => <p set:html={inline(paragraph)} />)}
+        </div>
+
+        <dl class="about__panel">
+          {
+            ABOUT.facts.map((fact) => (
+              <div class="about__row">
+                <dt>{fact.label}</dt>
+                <dd>{fact.value}</dd>
+              </div>
+            ))
+          }
+        </dl>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== 写作 ===================== -->
+  <section class="section" id="writing">
+    <div class="container">
+      <SectionHead
+        index="04"
+        label="写作"
+        title="技术笔记"
+        lead="把工程里的判断和踩坑写下来，比只贴代码链接有用。"
+      />
+
+      {latest.length > 0 ? <PostList posts={latest} /> : <p class="section__lead">文章正在整理中。</p>}
+
+      {
+        posts.length > latest.length && (
+          <p style="margin-top: 2rem;">
+            <a class="btn" href="/blog/">
+              全部文章
+              <Icon name="arrowRight" />
+            </a>
+          </p>
+        )
+      }
+    </div>
+  </section>
+
+  <!-- ===================== 联系 ===================== -->
+  <section class="section" id="contact">
+    <div class="container">
+      <div class="contact">
+        <div>
+          <p class="eyebrow">
+            <span class="eyebrow__index">05</span>
+            <span>联系</span>
+          </p>
+          <h2 class="contact__title">聊点具体的</h2>
+          <p class="contact__desc">
+            空间智能、3D 渲染、Agent 架构，或者你在自己项目里卡住的某个具体问题 —— 都欢迎。
+            目前只开放 GitHub 这一个联系入口，避免邮箱被批量采集。
+          </p>
+          <div class="contact__actions">
+            <a class="btn btn--primary" href={SITE.github} target="_blank" rel="noopener noreferrer">
+              <Icon name="github" />
+              {SITE.handle}
+            </a>
+            <a class="btn" href="/blog/">
+              <Icon name="rss" />
+              订阅 RSS
+            </a>
+          </div>
+        </div>
+
+        <div class="contact__panel">
+          <div class="contact__profile">
+            <img class="contact__avatar" src={SITE.avatar} alt={`${SITE.name} 的头像`} width="52" height="52" />
+            <div>
+              <p class="contact__name">{SITE.name}</p>
+              <p class="contact__handle">@{SITE.handle}</p>
+            </div>
+          </div>
+
+          <ul class="contact__list">
+            {
+              ABOUT.facts.map((fact) => (
+                <li>
+                  <span class="contact__list-label">{fact.label}</span>
+                  <span class="contact__list-value">{fact.value}</span>
+                </li>
+              ))
+            }
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

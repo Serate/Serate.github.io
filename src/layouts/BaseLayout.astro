@@ -1,0 +1,139 @@
+---
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import { SITE } from '../data/site';
+import '../styles/global.css';
+
+interface Props {
+  title?: string;
+  description?: string;
+  type?: 'website' | 'article';
+  publishedTime?: Date;
+  tags?: string[];
+  ogImage?: string;
+}
+
+const {
+  title,
+  description = SITE.description,
+  type = 'website',
+  publishedTime,
+  tags = [],
+  ogImage,
+} = Astro.props;
+
+const pageTitle = title ? `${title} — ${SITE.name}` : SITE.title;
+const canonical = new URL(Astro.url.pathname.replace(/\/$/, '') || '/', SITE.url).href;
+const image = new URL(ogImage ?? '/og-image.png', SITE.url).href;
+
+const personSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'Person',
+  name: SITE.name,
+  alternateName: SITE.handle,
+  url: SITE.url,
+  sameAs: [SITE.github],
+  jobTitle: '空间智能 / 3D Web 渲染工程师',
+  address: {
+    '@type': 'PostalAddress',
+    addressLocality: SITE.location,
+    addressCountry: 'CN',
+  },
+  knowsAbout: ['空间智能体', 'GIS 分析', '3D Gaussian Splatting', 'WebGL', 'TypeScript', 'Python'],
+};
+---
+
+<!doctype html>
+<html lang="zh-CN" data-theme="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="generator" content={Astro.generator} />
+
+    <title>{pageTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+
+    <meta property="og:type" content={type} />
+    <meta property="og:site_name" content={SITE.name} />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={image} />
+    <meta property="og:locale" content="zh_CN" />
+    {publishedTime && <meta property="article:published_time" content={publishedTime.toISOString()} />}
+    {tags.length > 0 && <meta property="article:tag" content={tags.join(', ')} />}
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={pageTitle} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={image} />
+
+    <meta name="theme-color" content="#0b0c0f" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#fbfbfa" media="(prefers-color-scheme: light)" />
+
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/avatar.png" />
+    <link rel="alternate" type="application/rss+xml" title={`${SITE.name} 的博客`} href="/rss.xml" />
+    <link rel="sitemap" type="application/xml" href="/sitemap-index.xml" />
+
+    <link
+      rel="preload"
+      href="/fonts/space-grotesk-latin.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link rel="preload" href="/fonts/jetbrains-mono-latin.woff2" as="font" type="font/woff2" crossorigin />
+
+    <script type="application/ld+json" set:html={JSON.stringify(personSchema)} is:inline />
+
+    <script is:inline>
+      // 主题在首屏渲染前确定，避免明暗切换闪烁
+      (function () {
+        document.documentElement.classList.add('js');
+        try {
+          var stored = localStorage.getItem('theme');
+          var theme =
+            stored ||
+            (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+          document.documentElement.dataset.theme = theme;
+        } catch (e) {
+          document.documentElement.dataset.theme = 'dark';
+        }
+      })();
+    </script>
+  </head>
+
+  <body>
+    <a class="skip-link" href="#main">跳到主要内容</a>
+
+    <Header />
+
+    <main id="main">
+      <slot />
+    </main>
+
+    <Footer />
+
+    <script>
+      // 滚动进场动效：仅在 JS 可用时启用，无 JS 时内容默认可见
+      const items = document.querySelectorAll('.reveal');
+      if (items.length && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        const io = new IntersectionObserver(
+          (entries) => {
+            for (const entry of entries) {
+              if (!entry.isIntersecting) continue;
+              entry.target.classList.add('is-visible');
+              io.unobserve(entry.target);
+            }
+          },
+          { rootMargin: '0px 0px -8% 0px', threshold: 0.05 },
+        );
+        items.forEach((item) => io.observe(item));
+      } else {
+        items.forEach((item) => item.classList.add('is-visible'));
+      }
+    </script>
+  </body>
+</html>

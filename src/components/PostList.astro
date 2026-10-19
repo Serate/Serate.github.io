@@ -1,0 +1,45 @@
+---
+import Icon from './Icon.astro';
+import type { CollectionEntry } from 'astro:content';
+
+interface Props {
+  posts: CollectionEntry<'blog'>[];
+  showTags?: boolean;
+}
+
+const { posts, showTags = true } = Astro.props;
+
+const formatDate = (date: Date) =>
+  `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, '0')}.${String(date.getDate()).padStart(2, '0')}`;
+---
+
+<div class="post-list">
+  {
+    posts.map((post) => (
+      <article class="post-item">
+        <time class="post-item__date" datetime={post.data.pubDate.toISOString()}>
+          {formatDate(post.data.pubDate)}
+        </time>
+
+        <div>
+          <h2 class="post-item__title">
+            <a href={`/blog/${post.id}/`}>{post.data.title}</a>
+          </h2>
+          <p class="post-item__desc">{post.data.description}</p>
+
+          {showTags && post.data.tags.length > 0 && (
+            <ul class="post-item__tags">
+              {post.data.tags.map((tag) => (
+                <li class="chip">{tag}</li>
+              ))}
+            </ul>
+          )}
+        </div>
+
+        <span class="post-item__arrow">
+          <Icon name="arrowRight" />
+        </span>
+      </article>
+    ))
+  }
+</div>

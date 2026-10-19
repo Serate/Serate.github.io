@@ -1,0 +1,60 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PostList from '../../components/PostList.astro';
+import Icon from '../../components/Icon.astro';
+
+const posts = (await getCollection('blog', ({ data }) => !data.draft)).sort(
+  (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
+);
+
+const counts = new Map<string, number>();
+for (const post of posts) {
+  for (const tag of post.data.tags) counts.set(tag, (counts.get(tag) ?? 0) + 1);
+}
+const tags = [...counts.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], 'zh'));
+---
+
+<BaseLayout
+  title="博客"
+  description="关于空间智能体、GIS 工具契约、3D Gaussian Splatting 渲染与工程实践的技术笔记。"
+>
+  <div class="container">
+    <header class="page-head">
+      <p class="eyebrow">
+        <span class="eyebrow__index">01</span>
+        <span>写作</span>
+      </p>
+      <h1 class="page-head__title">技术笔记</h1>
+      <p class="page-head__desc">
+        记录在 Spatial Agent 与 Aholo Viewer 里踩过的坑、做过的取舍，以及一些关于 Agent
+        工程化和 3D 渲染性能的想法。共 {posts.length} 篇。
+      </p>
+    </header>
+
+    {
+      tags.length > 0 && (
+        <ul class="tag-cloud">
+          {tags.map(([tag, count]) => (
+            <li>
+              <a class="tag-link" href={`/tags/${encodeURIComponent(tag)}/`}>
+                <Icon name="tag" />
+                {tag}
+                <span class="tag-link__count">{count}</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      )
+    }
+
+    <PostList posts={posts} />
+
+    <p style="margin-top: 2.5rem;">
+      <a class="btn" href="/rss.xml">
+        <Icon name="rss" />
+        订阅 RSS
+      </a>
+    </p>
+  </div>
+</BaseLayout>

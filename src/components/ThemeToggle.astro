@@ -1,0 +1,18 @@
+---
+import Icon from './Icon.astro';
+---
+
+<button class="icon-btn theme-toggle" type="button" aria-label="切换明暗主题" title="切换明暗主题">
+  <Icon name="moon" class="icon-moon" />
+  <Icon name="sun" class="icon-sun" />
+</button>
+
+<script>
+  const btn = document.querySelector<HTMLButtonElement>('.theme-toggle');
+  btn?.addEventListener('click', () => {
+    const root = document.documentElement;
+    const next = root.dataset.theme === 'light' ? 'dark' : 'light';
+    root.dataset.theme = next;
+    localStorage.setItem('theme', next);
+  });
+</script>

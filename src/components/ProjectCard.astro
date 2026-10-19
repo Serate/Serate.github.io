@@ -1,0 +1,51 @@
+---
+import Icon from './Icon.astro';
+import type { Project } from '../data/site';
+
+interface Props {
+  project: Project;
+}
+
+const { project } = Astro.props;
+---
+
+<article class="project">
+  <div class="project__aside">
+    <span class="project__index">{project.index}</span>
+    <span class="project__badge">{project.badge}</span>
+  </div>
+
+  <div class="project__body">
+    <h3 class="project__title">
+      <a href={project.repo} target="_blank" rel="noopener noreferrer">{project.name}</a>
+      <span class="project__tag">{project.tagline}</span>
+    </h3>
+
+    <p class="project__desc">{project.description}</p>
+
+    <ul class="project__points">
+      {project.points.map((point) => <li>{point}</li>)}
+    </ul>
+
+    <div class="project__foot">
+      <ul class="chips">
+        {project.stack.map((item) => <li class="chip">{item}</li>)}
+      </ul>
+
+      <div class="project__links">
+        <a class="project__link" href={project.repo} target="_blank" rel="noopener noreferrer">
+          <Icon name="github" />
+          代码仓库
+        </a>
+        {
+          project.demo && (
+            <a class="project__link" href={project.demo} target="_blank" rel="noopener noreferrer">
+              <Icon name="external" />
+              在线文档
+            </a>
+          )
+        }
+      </div>
+    </div>
+  </div>
+</article>
