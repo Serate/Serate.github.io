@@ -12,7 +12,7 @@ export async function GET(context: APIContext) {
     title: `${SITE.name} 的技术笔记`,
     description: '关于空间智能体、GIS 工具契约、3D Gaussian Splatting 渲染与工程实践。',
     site: context.site ?? SITE.url,
-    trailingSlash: false,
+    trailingSlash: true,
     customData: '<language>zh-cn</language>',
     items: posts.map((post) => ({
       title: post.data.title,
